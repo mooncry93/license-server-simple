@@ -154,7 +154,7 @@ app.get('/api/generate-test-license', async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`License server running on port ${PORT}`);
 });
