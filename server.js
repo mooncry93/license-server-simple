@@ -59,30 +59,32 @@ app.get('/', (req, res) => {
 });
 
 // 1. Activate a license key
-app.post('/api/activate-license', async (req, res) => {
+app.get('/api/generate-test-license', async (req, res) => {
     try {
-        const { licenseKey, deviceId } = req.body;
+        console.log("Attempting to generate test license...");
+        const licenseKey = generateSecureLicenseKey('TEST');
+        console.log("Generated key:", licenseKey);
         
-        if (!licenseKey || !deviceId) {
-            return res.status(400).json({ error: 'License key and device ID are required' });
-        }
+        const license = new License({
+            licenseKey,
+            product: 'test_product'
+        });
         
-        const license = await License.findOne({ licenseKey });
+        console.log("About to save license to database...");
+        await license.save();
+        console.log("License saved successfully");
         
-        if (!license) {
-            return res.status(404).json({ error: 'Invalid license key' });
-        }
-        
-        if (license.activated) {
-            if (license.deviceId !== deviceId) {
-                return res.status(403).json({ error: 'License key is already activated on another device' });
-            }
-            
-            return res.status(200).json({
-                status: 'activated',
-                message: 'License is already activated for this device'
-            });
-        }
+        res.status(201).json({ licenseKey });
+    } catch (error) {
+        console.error('Error generating test license:', error);
+        // Return more detailed error information
+        res.status(500).json({ 
+            error: 'Failed to generate test license', 
+            details: error.message,
+            stack: error.stack
+        });
+    }
+});
         
         license.activated = true;
         license.deviceId = deviceId;
